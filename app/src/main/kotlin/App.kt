@@ -1,3 +1,4 @@
+import java.io.DataOutputStream
 import java.net.ServerSocket
 
 fun main(args: Array<String>) {
@@ -11,6 +12,13 @@ fun main(args: Array<String>) {
     // ensures that we don't run into 'Address already in use' errors
     serverSocket.reuseAddress = true
 
-    serverSocket.accept() // Wait for connection from client.
+    val socket = serverSocket.accept() // Wait for connection from client.
     println("accepted new connection")
+
+    val output = DataOutputStream(socket.getOutputStream())
+    output.writeInt(0)
+    output.writeInt(7)
+
+    println("response messages")
+    output.close()
 }
