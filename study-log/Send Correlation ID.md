@@ -6,7 +6,7 @@
 
 client 는 request message 를 전송 <-> 브로커는 response message 를 응답
 
-세 개의 영역으로 구분되어 있다.
+요청, 응답은 세 개의 영역으로 구분되어 있다.
 
 - 메시지 크기(`message_size`)
 - Header

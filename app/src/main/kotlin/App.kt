@@ -1,3 +1,4 @@
+import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.ServerSocket
 
@@ -15,10 +16,24 @@ fun main(args: Array<String>) {
     val socket = serverSocket.accept() // Wait for connection from client.
     println("accepted new connection")
 
+    val input = DataInputStream(socket.getInputStream())
     val output = DataOutputStream(socket.getOutputStream())
-    output.writeInt(0)
-    output.writeInt(7)
 
-    println("response messages")
+    // 4Byte
+    val messageSize = input.readInt()
+    // 2Byte
+    val requestApiKey = input.readShort()
+    // 2Byte
+    val requestApiVersion = input.readShort()
+    val correlationId = input.readInt()
+
+    println(messageSize)
+    println(requestApiKey)
+    println(requestApiVersion)
+    println(correlationId)
+
+    output.writeInt(0)
+    output.writeInt(correlationId)
+
     output.close()
 }
