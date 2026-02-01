@@ -1,0 +1,26 @@
+## Kafka Api
+
+모든 카프카 요청은 API 호출이다.
+70개 가량의 API 들이 각각 다른 목적을 위해 정의되어 있다.
+
+### Api Versioning
+
+- Request 는 `request_api_version` 헤더로 사용하고 있는 버전을 명시한다.
+- Response 는 요청을 받은 API 버전을 지원해주면 동일한 API 버전을 반환한다.
+- 각각 API 버전 관리는 독립적이다. (`Produce (Version: 10)` 과 `Fetch (Version: 10)` 는 관련없음)
+
+=> API 버저닝을 통해 양방향 호환성이 가능해진다.
+( 새 클라이언트 <-> 구 서버, 구 클라이언트 <-> 새 서버 )
+
+### `ApiVersions` API
+
+브로커가 지원하는 API 버전들을 반환  
+
+- 응답에 `error_code` 로 2 바이트 반환
+- 0은 성공 코드(NO_ERROR)
+- 그 외는 에러 코드(EX: 35, UNSUPPORTED_VERSION)
+
+---
+
+- Kafka 프로토콜 API 와 Kafka 코어 API 는 다르다.
+  (코어 API 는 프로토콜 API 를 래핑한 고차원 API)

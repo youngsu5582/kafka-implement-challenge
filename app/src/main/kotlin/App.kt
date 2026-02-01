@@ -19,21 +19,44 @@ fun main(args: Array<String>) {
     val input = DataInputStream(socket.getInputStream())
     val output = DataOutputStream(socket.getOutputStream())
 
+    val request = parseProtocolRequest(input)
+
+    output.writeInt(0)
+    output.writeInt(request.correlationId)
+    output.writeInt(getErrorCode(request))
+
+    output.close()
+}
+
+private fun parseProtocolRequest(input: DataInputStream): ProtocolApiRequest {
     // 4Byte
     val messageSize = input.readInt()
     // 2Byte
     val requestApiKey = input.readShort()
+
     // 2Byte
     val requestApiVersion = input.readShort()
+
     val correlationId = input.readInt()
 
-    println(messageSize)
-    println(requestApiKey)
-    println(requestApiVersion)
-    println(correlationId)
+    return ProtocolApiRequest(
+        messageSize = messageSize,
+        requestApiKey = requestApiKey,
+        requestApiVersion = requestApiVersion,
+        correlationId = correlationId,
+    )
+}
 
-    output.writeInt(0)
-    output.writeInt(correlationId)
+private data class ProtocolApiRequest(
+    val messageSize: Int,
+    val requestApiKey: Short,
+    val requestApiVersion: Short,
+    val correlationId: Int,
+)
 
-    output.close()
+private fun getErrorCode(request: ProtocolApiRequest): Int {
+    if (request.requestApiVersion in 0..4) {
+        return 0
+    }
+    return 35
 }
