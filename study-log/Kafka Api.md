@@ -24,3 +24,18 @@
 
 - Kafka 프로토콜 API 와 Kafka 코어 API 는 다르다.
   (코어 API 는 프로토콜 API 를 래핑한 고차원 API)
+
+- request
+
+는 기존 프로토콜 요청과 동일하다.
+
+[ApiVersions Request (v4) Spec](https://binspec.org/kafka-api-versions-request-v4)
+[ApiVersions Response (v4)](https://binspec.org/kafka-api-versions-Response-v4)
+
+- response
+
+![image](https://darhcarwm16oo.cloudfront.net/1bb7ee6a1a47c9e9b78ee971841f4aa5.png)
+
+  - api_keys
+  - ![image](https://darhcarwm16oo.cloudfront.net/f312e52c2c930b4e499842e93b90f261.png)
+
