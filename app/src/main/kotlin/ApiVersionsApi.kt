@@ -1,8 +1,18 @@
-object ApiVersionsConstants {
-    const val API_KEY: Short = 18
-    const val MIN_VERSION: Short = 0
-    const val MAX_VERSION: Short = 4
-}
+data class ApiVersionsRequest(
+    val clientId: ClientId,
+    val clientVersion: ClientVersion,
+    val tagBuffer: Byte = 0
+)
+
+data class ClientId(
+    val length: Int,
+    val contents: String
+)
+
+data class ClientVersion(
+    val length: Int,
+    val contents: String
+)
 
 data class ApiVersionsResponse(
     override val correlationId: Int,

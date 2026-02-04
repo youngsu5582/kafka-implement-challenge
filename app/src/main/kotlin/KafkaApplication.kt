@@ -1,6 +1,7 @@
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.io.EOFException
 import java.net.ServerSocket
 
 class KafkaApplication {
@@ -13,17 +14,23 @@ class KafkaApplication {
 
         CustomLogger.debug("서버 소켓이 구동되었습니다. 포트: $PORT")
 
-        val socket = serverSocket.accept() // Wait for connection from client.
-        println("accepted new connection")
+        while (true) {
+            val socket = serverSocket.accept() // Wait for connection from client.
+            println("accepted new connection")
+            val input = DataInputStream(socket.getInputStream())
+            val output = DataOutputStream(socket.getOutputStream())
+            while (socket.isConnected) {
+                try {
+                    val protocolApiRequest = parseProtocolRequest(input)
+                    val apiVersionRequest = parseApiVersionRequest(input)
 
-        val input = DataInputStream(socket.getInputStream())
-        val output = DataOutputStream(socket.getOutputStream())
-
-        val request = parseProtocolRequest(input)
-        val response = processApiVersions(request)
-        writeApiVersionsResponse(output, response)
-
-        output.close()
+                    val response = processApiVersions(protocolApiRequest)
+                    writeApiVersionsResponse(output, response)
+                } catch (e: EOFException) {
+                    break
+                }
+            }
+        }
     }
 
     private fun parseProtocolRequest(input: DataInputStream): ProtocolApiRequest {
@@ -43,6 +50,37 @@ class KafkaApplication {
             requestApiKey = requestApiKey,
             requestApiVersion = requestApiVersion,
             correlationId = correlationId,
+        )
+    }
+
+    private fun parseApiVersionRequest(input: DataInputStream): ApiVersionsRequest {
+        val clientId = parseClientId(input)
+        val clientVersion = parseClientVersion(input)
+        return ApiVersionsRequest(
+            clientId = clientId,
+            clientVersion = clientVersion,
+        )
+    }
+
+    private fun parseClientId(input: DataInputStream): ClientId {
+        val length = input.readShort().toInt()
+        val bytes = ByteArray(length)
+        input.readFully(bytes)
+
+        return ClientId(
+            length = length,
+            contents = String(bytes, Charsets.UTF_8),
+        )
+    }
+
+    private fun parseClientVersion(input: DataInputStream): ClientVersion {
+        val length = input.readShort().toInt()
+        val bytes = ByteArray(length)
+        input.readFully(bytes)
+
+        return ClientVersion(
+            length = length,
+            contents = String(bytes, Charsets.UTF_8),
         )
     }
 
@@ -73,7 +111,7 @@ class KafkaApplication {
 
     private fun writeApiVersionsResponse(output: DataOutputStream, apiVersionsResponse: ApiVersionsResponse) {
         val byteArray = apiVersionsResponse.toByteArray()
-        output.write(byteArray.size)
+        output.writeInt(byteArray.size)
         output.write(byteArray)
     }
 
