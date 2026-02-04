@@ -17,19 +17,24 @@ class KafkaApplication {
         while (true) {
             val socket = serverSocket.accept() // Wait for connection from client.
             println("accepted new connection")
-            val input = DataInputStream(socket.getInputStream())
-            val output = DataOutputStream(socket.getOutputStream())
-            while (socket.isConnected) {
-                try {
-                    val protocolApiRequest = parseProtocolRequest(input)
-                    val apiVersionRequest = parseApiVersionRequest(input)
+            val thread = Thread {
+                val input = DataInputStream(socket.getInputStream())
+                val output = DataOutputStream(socket.getOutputStream())
+                while (socket.isConnected) {
+                    try {
+                        val protocolApiRequest = parseProtocolRequest(input)
+                        val apiVersionRequest = parseApiVersionRequest(input)
+                        CustomLogger.debug("확인을 하기 위해 잠시 대기합니다.")
+                        Thread.sleep(500)
 
-                    val response = processApiVersions(protocolApiRequest)
-                    writeApiVersionsResponse(output, response)
-                } catch (e: EOFException) {
-                    break
+                        val response = processApiVersions(protocolApiRequest)
+                        writeApiVersionsResponse(output, response)
+                    } catch (e: EOFException) {
+                        break
+                    }
                 }
             }
+            thread.start()
         }
     }
 
