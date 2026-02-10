@@ -39,3 +39,15 @@
   - api_keys
   - ![image](https://darhcarwm16oo.cloudfront.net/f312e52c2c930b4e499842e93b90f261.png)
 
+
+### DescribeTopicPartitions API
+
+특정 토픽의 파티션 상세 정보를 반환
+
+- Partition ID : 토픽 내 몇 번 파티션
+- Leader : 해당 파티션의 리더 (쓰기, 읽기 담당 브로커) 브로커
+- Replicas : 복제본이 어느 브로커들에 분산되어 있는지
+- ISR : In-Sync Replicas, 현재 리더와 데이터가 완전히 동기되어 있는 복제본 목록
+- Offline Replicas : 장애등 무언가로 사용할 수 없는 복제본
+
+=> 운영 및 관리 도구 만들때 사용
