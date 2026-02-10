@@ -38,7 +38,7 @@ class KafkaApplication {
         }
     }
 
-    private fun parseProtocolRequest(input: DataInputStream): ProtocolApiRequest {
+    private fun parseProtocolRequest(input: DataInputStream): KafkaRequestHeader {
         // 4Byte
         val messageSize = input.readInt()
         // 2Byte
@@ -50,12 +50,23 @@ class KafkaApplication {
         // 4Byte
         val correlationId = input.readInt()
 
-        return ProtocolApiRequest(
+        val contents = parseContents(input)
+
+        return KafkaRequestHeader(
             messageSize = messageSize,
             requestApiKey = requestApiKey,
             requestApiVersion = requestApiVersion,
             correlationId = correlationId,
+            contents = contents
         )
+    }
+
+    private fun parseContents(input: DataInputStream): String {
+        // 2 Byte
+        val length = input.readShort()
+        val byteArray = ByteArray(length.toInt())
+        input.readFully(byteArray)
+        return byteArray.toString(Charsets.UTF_8)
     }
 
     private fun parseApiVersionRequest(input: DataInputStream): ApiVersionsRequest {
@@ -89,7 +100,7 @@ class KafkaApplication {
         )
     }
 
-    private fun processApiVersions(request: ProtocolApiRequest): ApiVersionsResponse {
+    private fun processApiVersions(request: KafkaRequestHeader): ApiVersionsResponse {
         CustomLogger.debug("ProtocolApiRequest 를 수행합니다. $request")
 
         val correlationId = request.correlationId
@@ -148,7 +159,7 @@ class KafkaApplication {
         return buffer.toByteArray()
     }
 
-    private fun getErrorCode(request: ProtocolApiRequest): Short {
+    private fun getErrorCode(request: KafkaRequestHeader): Short {
         if (request.requestApiVersion in 0..4) {
             return 0
         }

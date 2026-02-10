@@ -20,7 +20,7 @@ data class ApiVersionsResponse(
     val apiKeys: List<ApiVersionsApiKeysItem>,
     val throttleTimeMs: Int,
     val tagBuffer: Byte = 0
-) : ProtocolApiResponse(correlationId)
+) : KafkaResponseHeader(correlationId)
 
 data class ApiVersionsApiKeysItem(
     val apiKey: Short,
