@@ -1,26 +1,45 @@
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
+
 data class ApiVersionsRequest(
-    val clientId: ClientId,
-    val clientVersion: ClientVersion,
+    val clientId: String?,
+    val clientVersion: String?,
     val tagBuffer: Byte = 0
-)
-
-data class ClientId(
-    val length: Int,
-    val contents: String
-)
-
-data class ClientVersion(
-    val length: Int,
-    val contents: String
-)
+) : KafkaRequestBody
 
 data class ApiVersionsResponse(
-    override val correlationId: Int,
     val errorCode: Short,
     val apiKeys: List<ApiVersionsApiKeysItem>,
     val throttleTimeMs: Int,
     val tagBuffer: Byte = 0
-) : KafkaResponseHeader(correlationId)
+) : KafkaResponseBody {
+    override fun toByteArray(): ByteArray {
+        CustomLogger.debug("ApiVersionResponse 를 Byte 로 변환합니다. $this")
+        val buffer = ByteArrayOutputStream()
+
+        DataOutputStream(buffer).apply {
+            writeShort(errorCode.toInt())
+
+            // 0 는 null, 1 은 빈 배열을 의미
+            writeByte(apiKeys.size + 1)
+            apiKeys.forEach {
+                writeShort(it.apiKey.toInt())
+                writeShort(it.minVersion.toInt())
+                writeShort(it.maxVersion.toInt())
+                writeByte(it.tagBuffer.toInt())
+            }
+            writeInt(throttleTimeMs)
+            writeByte(tagBuffer.toInt())
+        }
+
+        CustomLogger.debug(
+            "ApiVersionResponse Byte 변환 결과. 크기: ${buffer.size()} 결과: \n" +
+                    buffer.toByteArray().contentToString()
+        )
+
+        return buffer.toByteArray()
+    }
+}
 
 data class ApiVersionsApiKeysItem(
     val apiKey: Short,
